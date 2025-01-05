@@ -1,4 +1,6 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0"
+      encoding="utf-8"?>
+
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="ExtendedDataEntry.DataEntry"
@@ -6,71 +8,74 @@
 
 	<VerticalStackLayout>
 		<HorizontalStackLayout HorizontalOptions="Center">
-			<Button x:Name="ButtonLock" Text="Lock"  Clicked="Button_ChangeEditMode" CommandParameter="Lock" BackgroundColor="Yellow"/>
+			<Button x:Name="ButtonLock" Text="Lock" Clicked="Button_ChangeEditMode" CommandParameter="Lock"
+			        BackgroundColor="Yellow" />
 			<Button x:Name="ButtonHighlight" Text="Highlight" Clicked="Button_ChangeEditMode" CommandParameter="Highlight" />
-			<Button x:Name="ButtonEdit" Text="Edit" Clicked="Button_ChangeEditMode" CommandParameter="Edit"/>
+			<Button x:Name="ButtonEdit" Text="Edit" Clicked="Button_ChangeEditMode" CommandParameter="Edit" />
 		</HorizontalStackLayout>
-		
-		<Border StrokeThickness="1">
+		<HorizontalStackLayout>
+			<Border StrokeThickness="1">
 				<Grid>
 					<!-- EnteredText -->
-						<!-- Entered Text -->
-						<Label x:Name="EnteredText"
-						       Text="ABC" TextColor="Cyan"/>
+					<!-- Entered Text -->
+					<Label x:Name="EnteredText"
+					       Text="ABC" TextColor="Cyan" />
 
-						<!-- Text Cursor: Block as wide as 1 character in cyan -->
-						<Label x:Name="TextCursor"
-						       HorizontalOptions="Start"
-						       VerticalOptions="Center" 
-						       Opacity="0.85"
-						       IsVisible="False">
-							<Label.FormattedText>
-								<FormattedString>
-									<Span Text="{Binding Source={x:Reference EnteredText}, Path=Text}" TextColor="Transparent"  BackgroundColor="Transparent"/>
-									<Span x:Name="CursorSpan" Text="█" BackgroundColor="Transparent" TextColor="Cyan" />
-									<!-- <Span x:Name="CursorSpan" Text="x" BackgroundColor="Transparent" TextColor="Cyan" /> -->
-
-								</FormattedString>
-							</Label.FormattedText>
-						</Label>
-
-						<!-- Highlighter: Mirrors EnteredText in inverted colors -->
-					<Label x:Name="Highlighter"
+					<!-- Text Cursor: Block to symbolize overwrite, "I" to symbolize insertion -->
+					<Label x:Name="TextCursor"
 					       HorizontalOptions="Start"
-					       VerticalOptions="Center" 
+					       VerticalOptions="Center"
+					       Opacity="0.85"
 					       IsVisible="False">
 						<Label.FormattedText>
 							<FormattedString>
-								<Span Text="{Binding Source={x:Reference EnteredText}, Path=Text}" TextColor="Black" BackgroundColor="Cyan"/>
+								<Span Text="{Binding Source={x:Reference EnteredText}, Path=Text}" TextColor="Transparent"
+								      BackgroundColor="Transparent" />
+								<Span x:Name="CursorSpan" Text="█" BackgroundColor="Transparent" TextColor="Cyan" />
+								<!-- <Span x:Name="CursorSpan" Text="x" BackgroundColor="Transparent" TextColor="Cyan" /> -->
+
 							</FormattedString>
 						</Label.FormattedText>
 					</Label>
-					
 
-					
+					<!-- Highlighter: Highlights Entire EnteredText, following input will clear EnteredText -->
+					<Label x:Name="Highlighter"
+					       HorizontalOptions="Start"
+					       VerticalOptions="Center"
+					       IsVisible="False">
+						<Label.FormattedText>
+							<FormattedString>
+								<Span Text="{Binding Source={x:Reference EnteredText}, Path=Text}" TextColor="Black" BackgroundColor="Cyan" />
+							</FormattedString>
+						</Label.FormattedText>
+					</Label>
+
+
 				</Grid>
-			<Border.GestureRecognizers>
-				<TapGestureRecognizer Tapped="TapGestureRecognizer_OnTapped"/>
-			</Border.GestureRecognizers>
+				<Border.GestureRecognizers>
+					<TapGestureRecognizer Tapped="TapGestureRecognizer_OnTapped" />
+				</Border.GestureRecognizers>
 			</Border>
-		
+			
+			
+		</HorizontalStackLayout>
 
-		<BoxView HeightRequest="1" BackgroundColor="White" HorizontalOptions="FillAndExpand"	/> 
+
+		<BoxView HeightRequest="1" BackgroundColor="White" HorizontalOptions="FillAndExpand" />
 		<HorizontalStackLayout HorizontalOptions="Center">
 			<Button Text="←" Clicked="Button_OnClickedSpecial" CommandParameter="←" />
-			<Button Text="→"  Clicked="Button_OnClickedSpecial" CommandParameter="→" />
-			<Button Text="←DEL" Clicked="Button_OnClickedSpecial" CommandParameter="BACKSPACE"/>
-			<Button Text="ENTER" Clicked="Button_OnClickedSpecial" CommandParameter="ENTER"/>
-			<Button Text="ESC" Clicked="Button_OnClickedSpecial" CommandParameter="ESC" />
+			<Button Text="→" Clicked="Button_OnClickedSpecial" CommandParameter="→" />
+			<Button Text="←DEL" Clicked="Button_OnClickedSpecial" CommandParameter="BACKSPACE" />
+			<Button Text="ENTER" Clicked="Button_OnClickedSpecial" CommandParameter="ENTER" />
+			<!-- <Button Text="ESC" Clicked="Button_OnClickedSpecial" CommandParameter="ESC" /> -->
 		</HorizontalStackLayout>
 		<HorizontalStackLayout HorizontalOptions="Center">
 			<Button Text="A" Clicked="Button_OnClicked" CommandParameter="A" />
-			<Button Text="B"  Clicked="Button_OnClicked" CommandParameter="B"  />
-			<Button Text="C"  Clicked="Button_OnClicked" CommandParameter="C"  />
+			<Button Text="B" Clicked="Button_OnClicked" CommandParameter="B" />
+			<Button Text="C" Clicked="Button_OnClicked" CommandParameter="C" />
 		</HorizontalStackLayout>
 
 	</VerticalStackLayout>
-                
-            
+
 
 </ContentView>
