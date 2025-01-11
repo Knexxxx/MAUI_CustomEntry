@@ -20,13 +20,14 @@
 				Text="Extended DataEntry"
 				Style="{StaticResource Headline}"
 				SemanticProperties.HeadingLevel="Level1" />
-			<Entry Text="This is a basic entry" />
+			<Entry Text="This is a basic entry - do not use" />
 			<BoxView HeightRequest="80" BackgroundColor="Transparent" />
 			<BoxView HeightRequest="2" BackgroundColor="White" />
 
-			<Label Text="And here is a custom entry:" />
-			<local:DataEntry InitialMaxChar="4"/>
-
+			<Label Text="And here comes a custom entry:" />
+			<!-- this implements the custom control, which has an input SavedText and an output ProposedText. The state can be changed by the viewmodel and the control itself -->
+			<local:DataEntry MaxChar="6" EntryState="{Binding EntryState,Mode=TwoWay}" SavedText="{Binding SomeValue,Mode=OneWay}" ProposedText="{Binding ProposedValue,Mode=OneWayToSource}"/>
+			
 		</VerticalStackLayout>
 	</ScrollView>
 
