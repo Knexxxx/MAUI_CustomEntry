@@ -10,13 +10,23 @@
 			<Button x:Name="ButtonHighlight" Text="Highlight" Clicked="Button_ChangeEditMode" CommandParameter="Highlight" />
 			<Button x:Name="ButtonEdit" Text="Edit" Clicked="Button_ChangeEditMode" CommandParameter="Edit"/>
 		</HorizontalStackLayout>
+		<Label Text="{Binding EntryState}"/>
 		
 		<Border StrokeThickness="1">
 				<Grid>
 					<!-- EnteredText -->
 						<!-- Entered Text -->
 						<Label x:Name="EnteredText"
-						       Text="{Binding Source={x:Reference self}, Path=SavedText}" TextColor="Green"/>
+						       Text="{Binding Source={x:Reference self}, Path=SavedText}" TextColor="Green">
+							<Label.Triggers>
+								<DataTrigger TargetType="Label" Binding="{Binding EntryState}" Value="Locked">
+									<Setter Property="IsVisible" Value="True" />
+								</DataTrigger>
+								<DataTrigger TargetType="Label" Binding="{Binding EntryState}" Value="Edit">
+									<Setter Property="IsVisible" Value="False" />
+								</DataTrigger>
+							</Label.Triggers>
+							</Label>
 
 						<!-- Text Cursor: Block as wide as 1 character in cyan -->
 						<Label x:Name="TextCursor"
@@ -61,7 +71,7 @@
 			<Button Text="←" Clicked="Button_OnClickedSpecial" CommandParameter="←" />
 			<Button Text="→"  Clicked="Button_OnClickedSpecial" CommandParameter="→" />
 			<Button Text="←DEL" Clicked="Button_OnClickedSpecial" CommandParameter="BACKSPACE"/>
-			<Button Text="ENTER" Clicked="Button_OnClickedSpecial" CommandParameter="ENTER"/>
+			<Button Text="STORE" Clicked="Button_OnClickedSpecial" CommandParameter="ENTER"/>
 			<Button Text="ESC" Clicked="Button_OnClickedSpecial" CommandParameter="ESC" />
 		</HorizontalStackLayout>
 		<HorizontalStackLayout HorizontalOptions="Center">

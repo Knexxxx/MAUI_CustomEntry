@@ -21,7 +21,8 @@ public partial class MainViewModel: ObservableValidator
         SomeValue = value;
         // now we need to tell the DataEntry whether the value has been accepted or rejected
         EntryState = DataEntry.EntryStates.Locked;
-        Debug.WriteLine($"DataEntry should be now:{EntryState}");
+
+        
 
     }
 }

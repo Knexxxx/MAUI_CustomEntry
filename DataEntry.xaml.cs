@@ -1,8 +1,14 @@
 ﻿
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using CommunityToolkit.Mvvm.ComponentModel;
+
 namespace ExtendedDataEntry;
 
 public partial class DataEntry : ContentView
 {
+	
 	public static readonly BindableProperty MaxCharProperty =
 		BindableProperty.Create(nameof(MaxChar), typeof(int), typeof(Label), 6);
 
@@ -31,13 +37,34 @@ public partial class DataEntry : ContentView
 	}
 	
 	public static readonly BindableProperty EntryStateProperty =
-		BindableProperty.Create(nameof(EntryState), typeof(EntryStates), typeof(Label), EntryStates.Locked);
+		BindableProperty.Create(nameof(EntryState), typeof(EntryStates), typeof(Label), EntryStates.Locked,BindingMode.TwoWay);
 
 	public EntryStates EntryState
 	{
 		get => (EntryStates)GetValue(EntryStateProperty);
 		set => SetValue(EntryStateProperty, value);
 	}
+	private static void OnEntryStateChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		Debug.WriteLine("test");
+		if (bindable is DataEntry dataEntry)
+		{
+			dataEntry.UpdateEntryState();
+		}
+	}
+
+	// private static BindableProperty.ValidateValueDelegate Test4(BindableObject test, object result)
+	// {
+	// 	return result;
+	// }
+
+
+	protected void UpdateEntryState()
+	{
+		Debug.WriteLine("Updating EntryState changed");
+		// Add your logic to handle the state update
+	}
+	
 	
 	
 	
@@ -52,33 +79,7 @@ public partial class DataEntry : ContentView
 	}
 	
 	
-	/*private const double CharWidth = 10; // Approximate width of one character (adjust as needed)
 
-	private void UpdateCursorPosition()
-	{
-		if (EnteredText.Text.Length >= InitialMaxChar)
-		{
-			// Calculate the cursor's position
-			double textWidth = EnteredText.Measure(double.PositiveInfinity, double.PositiveInfinity).Request.Width;
-			TextCursor.TranslationX = textWidth - CharWidth;
-
-			// Show the cursor
-			TextCursor.IsVisible = true;
-		}
-		else
-		{
-			// Calculate the position for current text length
-			double textWidth = EnteredText.Measure(double.PositiveInfinity, double.PositiveInfinity).Request.Width;
-			TextCursor.TranslationX = textWidth;
-
-			// Show the cursor
-			TextCursor.IsVisible = true;
-		}
-	}*/
-
-	
-	
-	
 	private static CancellationTokenSource? _blinkingTokenSource;
 	public static CancellationTokenSource? BlinkingTokenSource
 	{
@@ -145,7 +146,7 @@ public partial class DataEntry : ContentView
 
 	private void TapGestureRecognizer_OnTapped(object? sender, TappedEventArgs e)
 	{
-		
+
 	}
 
 	async private void Button_OnClicked(object? sender, EventArgs e)
@@ -189,6 +190,9 @@ public partial class DataEntry : ContentView
 			case "ENTER":
 				// Send the text proposal via binding to the ViewModel for verification and storing
 				ProposedText = DraftTextSpan.Text;
+				// now we have to wait for the answer of the viewmodel
+				// if the value is accepted, the viewmodel will set the EntryState to Locked
+				// TODO: this change is not detected by the view
 				break;
 
 			default:
@@ -197,17 +201,6 @@ public partial class DataEntry : ContentView
 		}
 	}
 
-
-	// 	if (sender is Button clickedButton)
-	// 	{
-	// 		if (clickedButton.CommandParameter is not "BACKSPACE")
-	// 		{
-	// 			ButtonLock.SendClicked();
-	// 			return;
-	// 		}
-	// 		
-	// 	}
-	// }
 
 	
 	
@@ -229,7 +222,7 @@ public partial class DataEntry : ContentView
 				case "Edit":
 					Highlighter.IsVisible = false;
 					TextCursor.IsVisible = true;
-					EnteredText.IsVisible = false;
+					// EnteredText.IsVisible = false;
 					DraftTextSpan.Text = EnteredText.Text;
 					EntryState = EntryStates.Edit;
 					ButtonEdit.BackgroundColor = Colors.Yellow;
@@ -239,7 +232,7 @@ public partial class DataEntry : ContentView
 				case "Lock":
 					Highlighter.IsVisible = false;
 					TextCursor.IsVisible = false;
-					EnteredText.IsVisible = true;
+					// EnteredText.IsVisible = true;
 					_blinkingTokenSource?.Cancel();
 					_blinkingTokenSource = new CancellationTokenSource();
 					EntryState = EntryStates.Locked;
