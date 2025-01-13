@@ -4,84 +4,88 @@
              x:Class="ExtendedDataEntry.DataEntry"
              x:Name="self">
 
-	<VerticalStackLayout>
-		<HorizontalStackLayout HorizontalOptions="Center">
-			<Button x:Name="ButtonLock" Text="Lock"  Clicked="Button_ChangeEditMode" CommandParameter="Lock" BackgroundColor="Yellow"/>
-			<Button x:Name="ButtonHighlight" Text="Highlight" Clicked="Button_ChangeEditMode" CommandParameter="Highlight" />
-			<Button x:Name="ButtonEdit" Text="Edit" Clicked="Button_ChangeEditMode" CommandParameter="Edit"/>
-		</HorizontalStackLayout>
-		<Label Text="{Binding EntryState}"/>
-		
-		<Border StrokeThickness="1">
-				<Grid>
-					<!-- EnteredText -->
-						<!-- Entered Text -->
-						<Label x:Name="EnteredText"
-						       Text="{Binding Source={x:Reference self}, Path=SavedText}" TextColor="Green">
-							<Label.Triggers>
-								<DataTrigger TargetType="Label" Binding="{Binding EntryState}" Value="Locked">
-									<Setter Property="IsVisible" Value="True" />
-								</DataTrigger>
-								<DataTrigger TargetType="Label" Binding="{Binding EntryState}" Value="Edit">
-									<Setter Property="IsVisible" Value="False" />
-								</DataTrigger>
-							</Label.Triggers>
-							</Label>
+    <VerticalStackLayout>
+        <HorizontalStackLayout HorizontalOptions="Center">
+            <Button x:Name="ButtonLock" Text="Lock"  Clicked="Button_ChangeEditMode" CommandParameter="Lock" BackgroundColor="Yellow"/>
+            <Button x:Name="ButtonHighlight" Text="Highlight" Clicked="Button_ChangeEditMode" CommandParameter="Highlight" />
+            <Button x:Name="ButtonEdit" Text="Edit" Clicked="Button_ChangeEditMode" CommandParameter="Edit"/>
+        </HorizontalStackLayout>
+        <Label Text="{Binding EntryState}"/>
 
-						<!-- Text Cursor: Block as wide as 1 character in cyan -->
-						<Label x:Name="TextCursor"
+        <Border StrokeThickness="1">
+            <Grid>
+                <!-- EnteredText -->
+                <!-- Entered Text -->
+                <Label x:Name="EnteredText"
+						       Text="{Binding Source={x:Reference self}, Path=SavedText}" TextColor="Green">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label" Binding="{Binding EntryState}" Value="Locked">
+                            <Setter Property="IsVisible" Value="True" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Label" Binding="{Binding EntryState}" Value="Edit">
+                            <Setter Property="IsVisible" Value="False" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
+
+                <!-- Text Cursor: Block as wide as 1 character in cyan -->
+                <Label x:Name="TextCursor"
 						       HorizontalOptions="Start"
 						       VerticalOptions="Center" 
 						       Opacity="0.85"
 						       IsVisible="False">
-							<Label.FormattedText>
-								<FormattedString>
-									<!-- <Span x:Name="ProposedTextSpan" Text="{Binding Source={x:Reference EnteredText}, Path=Text}" TextColor="Transparent"  BackgroundColor="Transparent"/> -->
-									<Span x:Name="DraftTextSpan" TextColor="Red"  BackgroundColor="Transparent"/>
-									<Span x:Name="CursorSpan" Text="█" BackgroundColor="Transparent" TextColor="Cyan" />
-									<!-- <Span x:Name="CursorSpan" Text="x" BackgroundColor="Transparent" TextColor="Cyan" /> -->
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <!-- <Span x:Name="ProposedTextSpan" Text="{Binding Source={x:Reference EnteredText}, Path=Text}" TextColor="Transparent"  BackgroundColor="Transparent"/> -->
+                            <Span x:Name="DraftTextSpan" TextColor="Red"  BackgroundColor="Transparent" PropertyChanged="textSpan_PropertyChanged"/>
+                            <Span x:Name="DraftTextAfterSpan" TextColor="Red"  BackgroundColor="Transparent" PropertyChanged="textSpan_PropertyChanged"/>
+                            <!-- <Span x:Name="CursorSpan" Text="x" BackgroundColor="Transparent" TextColor="Cyan" /> -->
 
-								</FormattedString>
-							</Label.FormattedText>
-						</Label>
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+                <Label x:Name="CursorLabel" Text="█" BackgroundColor="Transparent" IsVisible="False" TextColor="Cyan" ZIndex="5"/>
 
-						<!-- Highlighter: Mirrors EnteredText in inverted colors -->
-					<Label x:Name="Highlighter"
+                <!--This label is just to get width of DraftTextSpan text with reliable method-->
+                <Label x:Name="tmpLabel" BackgroundColor="Transparent" TextColor="Transparent"/>
+
+                <!-- Highlighter: Mirrors EnteredText in inverted colors -->
+                <Label x:Name="Highlighter"
 					       HorizontalOptions="Start"
 					       VerticalOptions="Center" 
 					       IsVisible="False">
-						<Label.FormattedText>
-							<FormattedString>
-								<Span Text="{Binding Source={x:Reference EnteredText}, Path=Text}" TextColor="Black" BackgroundColor="Cyan"/>
-							</FormattedString>
-						</Label.FormattedText>
-					</Label>
-					
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="{Binding Source={x:Reference EnteredText}, Path=Text}" TextColor="Black" BackgroundColor="Cyan"/>
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
 
-					
-				</Grid>
-			<Border.GestureRecognizers>
-				<TapGestureRecognizer Tapped="TapGestureRecognizer_OnTapped"/>
-			</Border.GestureRecognizers>
-			</Border>
-		
 
-		<BoxView HeightRequest="1" BackgroundColor="White" HorizontalOptions="FillAndExpand"	/> 
-		<HorizontalStackLayout HorizontalOptions="Center">
-			<Button Text="←" Clicked="Button_OnClickedSpecial" CommandParameter="←" />
-			<Button Text="→"  Clicked="Button_OnClickedSpecial" CommandParameter="→" />
-			<Button Text="←DEL" Clicked="Button_OnClickedSpecial" CommandParameter="BACKSPACE"/>
-			<Button Text="STORE" Clicked="Button_OnClickedSpecial" CommandParameter="ENTER"/>
-			<Button Text="ESC" Clicked="Button_OnClickedSpecial" CommandParameter="ESC" />
-		</HorizontalStackLayout>
-		<HorizontalStackLayout HorizontalOptions="Center">
-			<Button Text="A" Clicked="Button_OnClicked" CommandParameter="A" />
-			<Button Text="B"  Clicked="Button_OnClicked" CommandParameter="B"  />
-			<Button Text="C"  Clicked="Button_OnClicked" CommandParameter="C"  />
-		</HorizontalStackLayout>
 
-	</VerticalStackLayout>
-                
-            
+            </Grid>
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="TapGestureRecognizer_OnTapped"/>
+            </Border.GestureRecognizers>
+        </Border>
+
+
+        <BoxView HeightRequest="1" BackgroundColor="White" HorizontalOptions="FillAndExpand"	/>
+        <HorizontalStackLayout HorizontalOptions="Center">
+            <Button Text="←" Clicked="Button_OnClickedSpecial" CommandParameter="←" />
+            <Button Text="→"  Clicked="Button_OnClickedSpecial" CommandParameter="→" />
+            <Button Text="←DEL" Clicked="Button_OnClickedSpecial" CommandParameter="BACKSPACE"/>
+            <Button Text="STORE" Clicked="Button_OnClickedSpecial" CommandParameter="ENTER"/>
+            <Button Text="ESC" Clicked="Button_OnClickedSpecial" CommandParameter="ESC" />
+        </HorizontalStackLayout>
+        <HorizontalStackLayout HorizontalOptions="Center">
+            <Button Text="A" Clicked="Button_OnClicked" CommandParameter="A" />
+            <Button Text="B"  Clicked="Button_OnClicked" CommandParameter="B"  />
+            <Button Text="C"  Clicked="Button_OnClicked" CommandParameter="C"  />
+        </HorizontalStackLayout>
+
+    </VerticalStackLayout>
+
+
 
 </ContentView>
