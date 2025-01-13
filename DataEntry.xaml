@@ -1,35 +1,70 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:ExtendedDataEntry"
              x:Class="ExtendedDataEntry.DataEntry"
+             x:DataType="local:DataEntry"
              x:Name="self">
 
 	<VerticalStackLayout>
 		<HorizontalStackLayout HorizontalOptions="Center">
-			<Button x:Name="ButtonLock" Text="Lock"  Clicked="Button_ChangeEditMode" CommandParameter="Lock" BackgroundColor="Yellow"/>
-			<Button x:Name="ButtonHighlight" Text="Highlight" Clicked="Button_ChangeEditMode" CommandParameter="Highlight" />
-			<Button x:Name="ButtonEdit" Text="Edit" Clicked="Button_ChangeEditMode" CommandParameter="Edit"/>
+			<Button x:Name="ButtonLock" Text="Lock"  Clicked="Button_ChangeEditMode" CommandParameter="Lock">
+				<Button.Triggers>
+					<DataTrigger TargetType="Button" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.EntryState}" Value="Locked">
+						<Setter Property="BackgroundColor" Value="Yellow" />
+					</DataTrigger>
+				</Button.Triggers>
+			</Button>
+			<Button x:Name="ButtonHighlight" Text="Highlight" Clicked="Button_ChangeEditMode" CommandParameter="Highlight">
+				<Button.Triggers>
+					<DataTrigger TargetType="Button" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.EntryState}" Value="Highlight">
+						<Setter Property="BackgroundColor" Value="Yellow" />
+					</DataTrigger>
+				</Button.Triggers>
+			</Button>
+
+			<Button x:Name="ButtonEdit" Text="Edit" Clicked="Button_ChangeEditMode" CommandParameter="Edit">
+				<Button.Triggers>
+					<DataTrigger TargetType="Button" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.EntryState}" Value="Edit">
+						<Setter Property="BackgroundColor" Value="Yellow" />
+					</DataTrigger>
+				</Button.Triggers>
+			</Button>
+
 		</HorizontalStackLayout>
-		<Label Text="{Binding EntryState}"/>
+		<Label Text="Cursor now in Insertmode" TextColor="Red" 
+		       IsVisible="{Binding Source={x:Reference EnteredText}, Path=BindingContext.CursorInInsertMode, Mode=OneWay}" />
+
+		<!-- <Label Text="Cursor now in Insertmode" TextColor="Red"> -->
+		<!-- 	<Label.Triggers> -->
+		<!-- 		<DataTrigger TargetType="Label" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.CursorInInsertMode}" Value="True"> -->
+		<!-- 			<Setter Property="IsVisible" Value="True" /> -->
+		<!-- 		</DataTrigger>  -->
+		<!-- 		<DataTrigger TargetType="Label" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.CursorInInsertMode}" Value="False"> -->
+		<!-- 			<Setter Property="IsVisible" Value="False" /> -->
+		<!-- 		</DataTrigger>  -->
+		<!-- 	</Label.Triggers> -->
+		<!-- </Label> -->
 		
-		<Border StrokeThickness="1">
+
+		
+		<Border  StrokeThickness="1">
 				<Grid>
-					<!-- EnteredText -->
-						<!-- Entered Text -->
+						<!-- Label "Saved Text", visible only in EntryState "LOCK" -->
 						<Label x:Name="EnteredText"
-						       Text="{Binding Source={x:Reference self}, Path=SavedText}" TextColor="Green">
+						       Text="{Binding Source={x:Reference self}, Path=SavedText}" >
 							<Label.Triggers>
-								<DataTrigger TargetType="Label" Binding="{Binding EntryState}" Value="Locked">
+								<DataTrigger TargetType="Label" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.EntryState}" Value="Locked">
 									<Setter Property="IsVisible" Value="True" />
 								</DataTrigger>
-								<DataTrigger TargetType="Label" Binding="{Binding EntryState}" Value="Edit">
+								<DataTrigger TargetType="Label" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.EntryState}" Value="Edit">
 									<Setter Property="IsVisible" Value="False" />
 								</DataTrigger>
 							</Label.Triggers>
-							</Label>
+						</Label>
 
-						<!-- Text Cursor: Block as wide as 1 character in cyan -->
-						<Label x:Name="TextCursor"
+						<!-- Label "DraftTextLabel", containing a Span with DraftText, visible in EntryState "EDIT"-->
+						<Label x:Name="DraftTextLabel"
 						       HorizontalOptions="Start"
 						       VerticalOptions="Center" 
 						       Opacity="0.85"
@@ -38,14 +73,77 @@
 								<FormattedString>
 									<!-- <Span x:Name="ProposedTextSpan" Text="{Binding Source={x:Reference EnteredText}, Path=Text}" TextColor="Transparent"  BackgroundColor="Transparent"/> -->
 									<Span x:Name="DraftTextSpan" TextColor="Red"  BackgroundColor="Transparent"/>
-									<Span x:Name="CursorSpan" Text="█" BackgroundColor="Transparent" TextColor="Cyan" />
+									<!-- <Span x:Name="CursorSpan" Text="█" BackgroundColor="Transparent" TextColor="Cyan" /> -->
 									<!-- <Span x:Name="CursorSpan" Text="x" BackgroundColor="Transparent" TextColor="Cyan" /> -->
 
 								</FormattedString>
 							</Label.FormattedText>
+							<Label.Triggers>
+								<DataTrigger TargetType="Label" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.EntryState}" Value="Locked">
+									<Setter Property="IsVisible" Value="False" />
+								</DataTrigger>
+								<DataTrigger TargetType="Label" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.EntryState}" Value="Edit">
+									<Setter Property="IsVisible" Value="True" />
+								</DataTrigger>
+							</Label.Triggers>
 						</Label>
+						<!-- Label "TextCursor", containing a Span with a (invisible) copy of DraftText, visible in EntryState "EDIT"-->
+						<Label x:Name="TextCursorOverwrite"
+						       HorizontalOptions="Start"
+						       VerticalOptions="Center" 
+						       Opacity="0.85"
+						       IsVisible="False">
+							<Label.FormattedText>
+								<FormattedString>
+									<!-- <Span x:Name="ProposedTextSpan" Text="{Binding Source={x:Reference EnteredText}, Path=Text}" TextColor="Transparent"  BackgroundColor="Transparent"/> -->
+									<Span x:Name="BeforeCursorInvisibleDraftTextSpan" TextColor="Transparent"  BackgroundColor="Transparent"/>
+									<!-- <Span x:Name="CursorSpanInsert" Text="I" BackgroundColor="Transparent" TextColor="Cyan"/> -->
+									<Span x:Name="CursorSpanOverwrite" Text="█" BackgroundColor="Transparent" TextColor="Yellow"/>
+									<!-- <Span x:Name="AfterCursorSpan" Text="█" BackgroundColor="Transparent" TextColor="Transparent"  /> -->
+									<!-- <Span x:Name="CursorSpan" Text="x" BackgroundColor="Transparent" TextColor="Cyan" /> -->
+								</FormattedString>
+							</Label.FormattedText>
+							<Label.Triggers>
+								<MultiTrigger TargetType="Label">
+								<MultiTrigger.Conditions>
+									<BindingCondition Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.EntryState}" Value="Edit" />
+									<BindingCondition Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.CursorInInsertMode}" Value="False" />
+								</MultiTrigger.Conditions>
+								<Setter Property="IsVisible" Value="True" />
+								</MultiTrigger>
+								<!-- <DataTrigger TargetType="Label" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.EntryState}" Value="Edit"> -->
+								<!-- 	<Setter Property="IsVisible" Value="True" /> -->
+								<!-- </DataTrigger> -->
+							</Label.Triggers>
+						</Label>
+						
+						<!-- Label "TextCursor", containing a Span with a (invisible) copy of DraftText, visible in EntryState "EDIT"-->
+						<Label x:Name="TextCursorInsert"
+						       HorizontalOptions="Start"
+						       VerticalOptions="Center" 
+						       Opacity="0.85"
+						       IsVisible="False">
+							<Label.FormattedText>
+								<FormattedString>
+									<!-- <Span x:Name="ProposedTextSpan" Text="{Binding Source={x:Reference EnteredText}, Path=Text}" TextColor="Transparent"  BackgroundColor="Transparent"/> -->
+									<Span x:Name="BeforeInsertCursorInvisibleDraftTextSpan" TextColor="Transparent"  BackgroundColor="Transparent"/>
+									<Span x:Name="CursorSpanInsert" Text="I" BackgroundColor="Transparent" TextColor="Cyan"/>
+									<!-- <Span x:Name="AfterCursorSpan" Text="█" BackgroundColor="Transparent" TextColor="Transparent"  /> -->
+									<!-- <Span x:Name="CursorSpan" Text="x" BackgroundColor="Transparent" TextColor="Cyan" /> -->
+								</FormattedString>
+							</Label.FormattedText>
+							<Label.Triggers>
+								<DataTrigger TargetType="Label" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.EntryState}" Value="Locked">
+									<Setter Property="IsVisible" Value="False" />
+								</DataTrigger>
+								<DataTrigger TargetType="Label" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.EntryState}" Value="Edit">
+									<Setter Property="IsVisible" Value="True" />
+								</DataTrigger>
+							</Label.Triggers>
+						</Label>
+						
 
-						<!-- Highlighter: Mirrors EnteredText in inverted colors -->
+						<!-- Label Highlighter: Mirrors SavedText in inverted colors,visible only in EntryState "HIGHLIGHT"  -->
 					<Label x:Name="Highlighter"
 					       HorizontalOptions="Start"
 					       VerticalOptions="Center" 
@@ -55,6 +153,17 @@
 								<Span Text="{Binding Source={x:Reference EnteredText}, Path=Text}" TextColor="Black" BackgroundColor="Cyan"/>
 							</FormattedString>
 						</Label.FormattedText>
+						<Label.Triggers>
+							<DataTrigger TargetType="Label" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.EntryState}" Value="Highlight">
+								<Setter Property="IsVisible" Value="True" />
+							</DataTrigger>
+							<!-- <DataTrigger TargetType="Label" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.EntryState}" Value="Lock"> -->
+							<!-- 	<Setter Property="IsVisible" Value="False" /> -->
+							<!-- </DataTrigger> -->
+							<!-- <DataTrigger TargetType="Label" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.EntryState}" Value="Edit"> -->
+							<!-- 	<Setter Property="IsVisible" Value="False" /> -->
+							<!-- </DataTrigger> -->
+						</Label.Triggers>
 					</Label>
 					
 
@@ -63,6 +172,14 @@
 			<Border.GestureRecognizers>
 				<TapGestureRecognizer Tapped="TapGestureRecognizer_OnTapped"/>
 			</Border.GestureRecognizers>
+			<Border.Triggers>
+				<DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.EntryState}" Value="Edit">
+						<Setter Property="Stroke" Value="Cyan" />
+				</DataTrigger>
+				<DataTrigger TargetType="Border" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.EntryState}" Value="Highlight">
+					<Setter Property="Stroke" Value="Cyan" />
+				</DataTrigger>
+			</Border.Triggers>
 			</Border>
 		
 
