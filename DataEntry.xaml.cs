@@ -298,9 +298,9 @@ public partial class DataEntry : ContentView
         tmpLabel.Text = DraftTextSpan.Text;
         CursorLabel.TranslationY = 4;
 
-        if (totalText.Length < MaxChar)
+        if (totalText.Length < MaxChar || (!string.IsNullOrEmpty(DraftTextSpan.Text) && !string.IsNullOrEmpty(DraftTextAfterSpan.Text)))
         {
-            CursorLabel.TranslationX = tmpLabel.Measure(151, 115).Width - 4;
+            CursorLabel.TranslationX = tmpLabel.Measure(double.MaxValue, double.MaxValue).Width - 4;
             if(!string.IsNullOrEmpty(DraftTextAfterSpan.Text))
                 CursorLabel.Text = cursorInsertText.ToString();
         }
