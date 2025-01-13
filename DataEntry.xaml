@@ -32,21 +32,6 @@
 			</Button>
 
 		</HorizontalStackLayout>
-		<Label Text="Cursor now in Insertmode" TextColor="Red" 
-		       IsVisible="{Binding Source={x:Reference EnteredText}, Path=BindingContext.CursorInInsertMode, Mode=OneWay}" />
-
-		<!-- <Label Text="Cursor now in Insertmode" TextColor="Red"> -->
-		<!-- 	<Label.Triggers> -->
-		<!-- 		<DataTrigger TargetType="Label" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.CursorInInsertMode}" Value="True"> -->
-		<!-- 			<Setter Property="IsVisible" Value="True" /> -->
-		<!-- 		</DataTrigger>  -->
-		<!-- 		<DataTrigger TargetType="Label" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.CursorInInsertMode}" Value="False"> -->
-		<!-- 			<Setter Property="IsVisible" Value="False" /> -->
-		<!-- 		</DataTrigger>  -->
-		<!-- 	</Label.Triggers> -->
-		<!-- </Label> -->
-		
-
 		
 		<Border  StrokeThickness="1">
 				<Grid>
@@ -62,9 +47,11 @@
 								</DataTrigger>
 							</Label.Triggers>
 						</Label>
-
-						<!-- Label "DraftTextLabel", containing a Span with DraftText, visible in EntryState "EDIT"-->
-						<Label x:Name="DraftTextLabel"
+						
+						
+						
+						<!-- Text Cursor: Block as wide as 1 character in cyan -->
+						<Label x:Name="TextCursor"
 						       HorizontalOptions="Start"
 						       VerticalOptions="Center" 
 						       Opacity="0.85"
@@ -72,9 +59,43 @@
 							<Label.FormattedText>
 								<FormattedString>
 									<!-- <Span x:Name="ProposedTextSpan" Text="{Binding Source={x:Reference EnteredText}, Path=Text}" TextColor="Transparent"  BackgroundColor="Transparent"/> -->
-									<Span x:Name="DraftTextSpan" TextColor="Red"  BackgroundColor="Transparent"/>
-									<!-- <Span x:Name="CursorSpan" Text="█" BackgroundColor="Transparent" TextColor="Cyan" /> -->
+									<Span x:Name="DraftTextSpan" TextColor="Red"  BackgroundColor="Transparent" PropertyChanged="textSpan_PropertyChanged"/>
+									<Span x:Name="DraftTextAfterSpan" TextColor="Red"  BackgroundColor="Transparent" PropertyChanged="textSpan_PropertyChanged"/>
 									<!-- <Span x:Name="CursorSpan" Text="x" BackgroundColor="Transparent" TextColor="Cyan" /> -->
+
+								</FormattedString>
+							</Label.FormattedText>
+						</Label>
+						<Label x:Name="CursorLabel" Text="█" BackgroundColor="Transparent" IsVisible="False" TextColor="Cyan" ZIndex="5"/>
+
+						<!--This label is just to get width of DraftTextSpan text with reliable method-->
+						<Label x:Name="tmpLabel" BackgroundColor="Transparent" TextColor="Transparent"/>
+
+						<!-- Highlighter: Mirrors EnteredText in inverted colors -->
+						<Label x:Name="Highlighter"
+						       HorizontalOptions="Start"
+						       VerticalOptions="Center" 
+						       IsVisible="False">
+							<Label.FormattedText>
+								<FormattedString>
+									<Span Text="{Binding Source={x:Reference EnteredText}, Path=Text}" TextColor="Black" BackgroundColor="Cyan"/>
+								</FormattedString>
+							</Label.FormattedText>
+						</Label>
+
+
+						<!--~1~ Label "DraftTextLabel", containing a Span with DraftText, visible in EntryState "EDIT"@1@
+						<Label x:Name="DraftTextLabel"
+						       HorizontalOptions="Start"
+						       VerticalOptions="Center" 
+						       Opacity="0.85"
+						       IsVisible="False">
+							<Label.FormattedText>
+								<FormattedString>
+									~1~ <Span x:Name="ProposedTextSpan" Text="{Binding Source={x:Reference EnteredText}, Path=Text}" TextColor="Transparent"  BackgroundColor="Transparent"/> @1@
+									<Span x:Name="DraftTextSpan" TextColor="Red"  BackgroundColor="Transparent"/>
+									~1~ <Span x:Name="CursorSpan" Text="█" BackgroundColor="Transparent" TextColor="Cyan" /> @1@
+									~1~ <Span x:Name="CursorSpan" Text="x" BackgroundColor="Transparent" TextColor="Cyan" /> @1@
 
 								</FormattedString>
 							</Label.FormattedText>
@@ -87,7 +108,7 @@
 								</DataTrigger>
 							</Label.Triggers>
 						</Label>
-						<!-- Label "TextCursor", containing a Span with a (invisible) copy of DraftText, visible in EntryState "EDIT"-->
+						~1~ Label "TextCursor", containing a Span with a (invisible) copy of DraftText, visible in EntryState "EDIT"@1@
 						<Label x:Name="TextCursorOverwrite"
 						       HorizontalOptions="Start"
 						       VerticalOptions="Center" 
@@ -95,12 +116,12 @@
 						       IsVisible="False">
 							<Label.FormattedText>
 								<FormattedString>
-									<!-- <Span x:Name="ProposedTextSpan" Text="{Binding Source={x:Reference EnteredText}, Path=Text}" TextColor="Transparent"  BackgroundColor="Transparent"/> -->
+									~1~ <Span x:Name="ProposedTextSpan" Text="{Binding Source={x:Reference EnteredText}, Path=Text}" TextColor="Transparent"  BackgroundColor="Transparent"/> @1@
 									<Span x:Name="BeforeCursorInvisibleDraftTextSpan" TextColor="Transparent"  BackgroundColor="Transparent"/>
-									<!-- <Span x:Name="CursorSpanInsert" Text="I" BackgroundColor="Transparent" TextColor="Cyan"/> -->
+									~1~ <Span x:Name="CursorSpanInsert" Text="I" BackgroundColor="Transparent" TextColor="Cyan"/> @1@
 									<Span x:Name="CursorSpanOverwrite" Text="█" BackgroundColor="Transparent" TextColor="Yellow"/>
-									<!-- <Span x:Name="AfterCursorSpan" Text="█" BackgroundColor="Transparent" TextColor="Transparent"  /> -->
-									<!-- <Span x:Name="CursorSpan" Text="x" BackgroundColor="Transparent" TextColor="Cyan" /> -->
+									~1~ <Span x:Name="AfterCursorSpan" Text="█" BackgroundColor="Transparent" TextColor="Transparent"  /> @1@
+									~1~ <Span x:Name="CursorSpan" Text="x" BackgroundColor="Transparent" TextColor="Cyan" /> @1@
 								</FormattedString>
 							</Label.FormattedText>
 							<Label.Triggers>
@@ -111,13 +132,13 @@
 								</MultiTrigger.Conditions>
 								<Setter Property="IsVisible" Value="True" />
 								</MultiTrigger>
-								<!-- <DataTrigger TargetType="Label" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.EntryState}" Value="Edit"> -->
-								<!-- 	<Setter Property="IsVisible" Value="True" /> -->
-								<!-- </DataTrigger> -->
+								~1~ <DataTrigger TargetType="Label" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.EntryState}" Value="Edit"> @1@
+								~1~ 	<Setter Property="IsVisible" Value="True" /> @1@
+								~1~ </DataTrigger> @1@
 							</Label.Triggers>
 						</Label>
 						
-						<!-- Label "TextCursor", containing a Span with a (invisible) copy of DraftText, visible in EntryState "EDIT"-->
+						~1~ Label "TextCursor", containing a Span with a (invisible) copy of DraftText, visible in EntryState "EDIT"@1@
 						<Label x:Name="TextCursorInsert"
 						       HorizontalOptions="Start"
 						       VerticalOptions="Center" 
@@ -125,11 +146,11 @@
 						       IsVisible="False">
 							<Label.FormattedText>
 								<FormattedString>
-									<!-- <Span x:Name="ProposedTextSpan" Text="{Binding Source={x:Reference EnteredText}, Path=Text}" TextColor="Transparent"  BackgroundColor="Transparent"/> -->
+									~1~ <Span x:Name="ProposedTextSpan" Text="{Binding Source={x:Reference EnteredText}, Path=Text}" TextColor="Transparent"  BackgroundColor="Transparent"/> @1@
 									<Span x:Name="BeforeInsertCursorInvisibleDraftTextSpan" TextColor="Transparent"  BackgroundColor="Transparent"/>
 									<Span x:Name="CursorSpanInsert" Text="I" BackgroundColor="Transparent" TextColor="Cyan"/>
-									<!-- <Span x:Name="AfterCursorSpan" Text="█" BackgroundColor="Transparent" TextColor="Transparent"  /> -->
-									<!-- <Span x:Name="CursorSpan" Text="x" BackgroundColor="Transparent" TextColor="Cyan" /> -->
+									~1~ <Span x:Name="AfterCursorSpan" Text="█" BackgroundColor="Transparent" TextColor="Transparent"  /> @1@
+									~1~ <Span x:Name="CursorSpan" Text="x" BackgroundColor="Transparent" TextColor="Cyan" /> @1@
 								</FormattedString>
 							</Label.FormattedText>
 							<Label.Triggers>
@@ -143,7 +164,7 @@
 						</Label>
 						
 
-						<!-- Label Highlighter: Mirrors SavedText in inverted colors,visible only in EntryState "HIGHLIGHT"  -->
+						~1~ Label Highlighter: Mirrors SavedText in inverted colors,visible only in EntryState "HIGHLIGHT"  @1@
 					<Label x:Name="Highlighter"
 					       HorizontalOptions="Start"
 					       VerticalOptions="Center" 
@@ -157,16 +178,20 @@
 							<DataTrigger TargetType="Label" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.EntryState}" Value="Highlight">
 								<Setter Property="IsVisible" Value="True" />
 							</DataTrigger>
-							<!-- <DataTrigger TargetType="Label" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.EntryState}" Value="Lock"> -->
-							<!-- 	<Setter Property="IsVisible" Value="False" /> -->
-							<!-- </DataTrigger> -->
-							<!-- <DataTrigger TargetType="Label" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.EntryState}" Value="Edit"> -->
-							<!-- 	<Setter Property="IsVisible" Value="False" /> -->
-							<!-- </DataTrigger> -->
+							~1~ <DataTrigger TargetType="Label" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.EntryState}" Value="Lock"> @1@
+							~1~ 	<Setter Property="IsVisible" Value="False" /> @1@
+							~1~ </DataTrigger> @1@
+							~1~ <DataTrigger TargetType="Label" Binding="{Binding Source={x:Reference EnteredText}, Path=BindingContext.EntryState}" Value="Edit"> @1@
+							~1~ 	<Setter Property="IsVisible" Value="False" /> @1@
+							~1~ </DataTrigger> @1@
 						</Label.Triggers>
 					</Label>
+					-->
 					
 
+						
+						
+						
 					
 				</Grid>
 			<Border.GestureRecognizers>

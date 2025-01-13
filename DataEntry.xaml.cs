@@ -7,6 +7,10 @@ namespace ExtendedDataEntry;
 
 public partial class DataEntry : ContentView
 {
+    private const char CursorLabelText = '█';
+    private const char cursorInsertText = 'ꕯ';
+    private string totalText;
+
     public static readonly BindableProperty MaxCharProperty =
         BindableProperty.Create(nameof(MaxChar), typeof(int), typeof(Label), 6);
 
@@ -26,8 +30,7 @@ public partial class DataEntry : ContentView
     }
 
     public static readonly BindableProperty ProposedTextProperty =
-        BindableProperty.Create(nameof(ProposedText), typeof(string), typeof(Label), string.Empty,
-            validateValue: IsValidValue);
+        BindableProperty.Create(nameof(ProposedText), typeof(string), typeof(Label), string.Empty);
 
     public string ProposedText
     {
@@ -35,20 +38,9 @@ public partial class DataEntry : ContentView
         set => SetValue(ProposedTextProperty, value);
     }
 
-    static bool IsValidValue(BindableObject view, object value)
-    {
-        string result;
-        Debug.WriteLine("validating....");
-        if (value.ToString() == "ABCC")
-            return true;
-        return false;
-    }
-
-
     public static readonly BindableProperty EntryStateProperty =
         BindableProperty.Create(nameof(EntryState), typeof(EntryStates), typeof(Label), EntryStates.Locked,
-            BindingMode.TwoWay, propertyChanged: OnEntryStateChanged);
-
+            BindingMode.TwoWay);
 
     public EntryStates EntryState
     {
@@ -58,40 +50,16 @@ public partial class DataEntry : ContentView
 
     private static void OnEntryStateChanged(BindableObject bindable, object oldValue, object newValue)
     {
-        if (bindable is DataEntry dataentry)
-        {
-            Debug.WriteLine("yes it is!");
-
-            if (newValue is EntryStates.Edit)
-            {
-                dataentry.DraftTextSpan.Text = "";
-                dataentry.StartBlinkingCursor(1, true);
-            }
-            else dataentry.StopBlinkingCursor();
-        }
-
-
         Debug.WriteLine("test");
-        // if (bindable is DataEntry dataEntry)
-        // {
-        // 	dataEntry.UpdateEntryState();
-        // }
-    }
-
-    // {
-    // 	return result;
-    // }
-
-
-    protected void UpdateEntryState()
-    {
-        Debug.WriteLine("Updating EntryState changed");
-        // Add your logic to handle the state update
+        if (bindable is DataEntry dataEntry)
+        {
+            //
+        }
     }
 
 
-    private int Cursorposition { get; set; } = 0;
-    public bool CursorInInsertMode { get; set; } = false;
+
+
 
     public enum EntryStates
     {
@@ -101,10 +69,12 @@ public partial class DataEntry : ContentView
     }
 
 
+
     public DataEntry()
     {
         InitializeComponent();
     }
+
 
 
     private static CancellationTokenSource? _blinkingTokenSource;
@@ -115,18 +85,368 @@ public partial class DataEntry : ContentView
         set => _blinkingTokenSource = value;
     }
 
-    private FormattedString FormattedStringWithCursor(FormattedString formattedString, int cursorpos,
-        bool overwritemode)
+
+    public async Task ToggleSpanVisibility(Label parentLabel, string spanName = "")
     {
-        var spanbefore = DraftTextSpan.Text.Substring(0, Cursorposition);
-        if (DraftTextSpan.Text.Length < MaxChar && Cursorposition != DraftTextSpan.Text.Length)
+        // Cancel any existing blinking task
+        _blinkingTokenSource?.Cancel();
+        _blinkingTokenSource = new CancellationTokenSource();
+        CancellationToken token = _blinkingTokenSource.Token;
+
+        try
         {
-            Debug.WriteLine("Insert mode at pos" + Cursorposition);
-            CursorInInsertMode = true;
+            while (!token.IsCancellationRequested)
+            {
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    // Find the span with the specified name
+                    if (parentLabel.FormattedText is FormattedString formattedString)
+                    {
+                        var targetSpan = formattedString.Spans.FirstOrDefault(s => s.StyleId == spanName);
+                        if (targetSpan != null)
+                        {
+                            // Toggle visibility by changing the text color
+                            targetSpan.TextColor = targetSpan.TextColor == Colors.Transparent
+                                ? Colors.Black // Replace with your desired visible color
+                                : Colors.Transparent;
+                        }
+                    }
+                    //Label itself will be blinking
+                    else
+                    {
+                        parentLabel.TextColor = parentLabel.TextColor == Colors.Transparent
+                            ? Colors.Black
+                            : Colors.Transparent;
+                        
+                        // parentLabel.FormattedText.Spans[0].TextColor = parentLabel.TextColor == Colors.Transparent
+                        //     ? Colors.Black
+                        //     : Colors.Transparent;
+                        
+                    }
+                });
+
+                // Wait for 700ms before toggling again
+                await Task.Delay(700, token);
+            }
+        }
+        catch (TaskCanceledException)
+        {
+            // Task was cancelled, which is expected behavior
+        }
+        finally
+        {
+            // Ensure the span is visible when the task ends
+            await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                if (parentLabel.FormattedText is FormattedString formattedString)
+                {
+                    var targetSpan = formattedString.Spans.FirstOrDefault(s => s.StyleId == spanName);
+                    if (targetSpan != null)
+                    {
+                        targetSpan.TextColor = Colors.Black; // Replace with the default visible color
+                    }
+                }
+            });
+        }
+    }
+
+
+
+
+
+    private void TapGestureRecognizer_OnTapped(object? sender, TappedEventArgs e)
+    {
+
+    }
+
+    async private void Button_OnClicked(object? sender, EventArgs e)
+    {
+        if (EntryState == EntryStates.Locked) return;
+        if (EntryState == EntryStates.Highlight)
+        {
+            EntryState = EntryStates.Edit;
+            Highlighter.IsVisible = false;
+            TextCursor.IsVisible = true;
+            //await ToggleSpanVisibility(TextCursor, "CursorLabel");
         }
 
-        return new FormattedString();
+        if (sender is Button button && EntryState == EntryStates.Edit)
+        {
+            if (totalText.Length < MaxChar)
+                DraftTextSpan.Text += button.Text;
+            else
+                DraftTextSpan.Text = DraftTextSpan.Text.Substring(0, DraftTextSpan.Text.Length - 1) + button.Text;
+
+        }
     }
+
+    private void Button_OnClickedSpecial(object? sender, EventArgs e)
+    {
+        if (EntryState != EntryStates.Edit)
+            return;
+
+        if (sender is not Button button || button.CommandParameter is not string command)
+            return;
+
+        switch (command)
+        {
+            case "BACKSPACE":
+                // Remove the last character from DraftTextSpan.Text if it exists
+                DraftTextSpan.Text = !string.IsNullOrEmpty(DraftTextSpan.Text)
+                    ? DraftTextSpan.Text[..^1]
+                    : string.Empty;
+                break;
+
+            case "STORE":
+                _blinkingTokenSource?.Cancel();
+                // Send the text proposal via binding to the ViewModel for verification and storing
+                ProposedText = totalText;
+                // now we have to wait for the answer of the viewmodel
+                // if the value is accepted, the viewmodel will set the EntryState to Locked
+                // TODO: this change is not detected by the view
+                break;
+
+            case "→":
+                //Check that there's character after cursor
+                if (!string.IsNullOrEmpty(DraftTextAfterSpan.Text))
+                {
+                    //Pass character before cursorr
+                    char transChar = DraftTextAfterSpan.Text.First();
+                    DraftTextAfterSpan.Text = DraftTextAfterSpan.Text.Remove(0, 1);
+                    DraftTextSpan.Text += transChar;
+                }
+
+                break;
+
+            case "←":
+                //Check that there's character before cursor
+                if (!string.IsNullOrEmpty(DraftTextSpan.Text))
+                {
+                    //Pass character after cursorr
+                    char transChar = DraftTextSpan.Text.Last();
+                    DraftTextSpan.Text = DraftTextSpan.Text.Remove(DraftTextSpan.Text.Length - 1, 1);
+                    DraftTextAfterSpan.Text = transChar + DraftTextAfterSpan.Text;
+                }
+
+                break;
+            default:
+                // Handle other commands if necessary
+                break;
+        }
+    }
+
+
+
+
+    private async void Button_ChangeEditMode(object? sender, EventArgs e)
+    {
+        if (sender is Button button)
+        {
+            ResetButtonColors();
+
+            switch (button.CommandParameter)
+            {
+                case "Highlight":
+                    Highlighter.IsVisible = true;
+                    TextCursor.IsVisible = false;
+                    CursorLabel.IsVisible = false;
+                    EntryState = EntryStates.Highlight;
+                    ButtonHighlight.BackgroundColor = Colors.Yellow;
+                    break;
+
+                case "Edit":
+                    Highlighter.IsVisible = false;
+                    TextCursor.IsVisible = true;
+                    // EnteredText.IsVisible = false;
+                    DraftTextSpan.Text = EnteredText.Text;
+                    EntryState = EntryStates.Edit;
+                    ButtonEdit.BackgroundColor = Colors.Yellow;
+                    CursorLabel.IsVisible = true;
+                    await ToggleSpanVisibility(CursorLabel);
+                    break;
+
+                case "Lock":
+                    Highlighter.IsVisible = false;
+                    TextCursor.IsVisible = false;
+                    CursorLabel.IsVisible = false;
+                    // EnteredText.IsVisible = true;
+                    _blinkingTokenSource?.Cancel();
+                    _blinkingTokenSource = new CancellationTokenSource();
+                    EntryState = EntryStates.Locked;
+                    ButtonLock.BackgroundColor = Colors.Yellow;
+                    break;
+            }
+        }
+    }
+
+    private void ResetButtonColors()
+    {
+        ButtonHighlight.BackgroundColor = Colors.MediumPurple;
+        ButtonEdit.BackgroundColor = Colors.MediumPurple;
+        ButtonLock.BackgroundColor = Colors.MediumPurple;
+    }
+
+    private void textSpan_PropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        if (DraftTextSpan is not null && DraftTextAfterSpan is not null)
+        {
+            totalText = DraftTextSpan.Text + DraftTextAfterSpan.Text;
+            moveCursor();
+        }
+    }
+
+    private void moveCursor()
+    {
+        tmpLabel.Text = DraftTextSpan.Text;
+        CursorLabel.TranslationY = 4;
+
+        if (totalText.Length < MaxChar)
+        {
+            CursorLabel.TranslationX = tmpLabel.Measure(151, 115).Width - 4;
+            if (!string.IsNullOrEmpty(DraftTextAfterSpan.Text))
+                CursorLabel.Text = cursorInsertText.ToString();
+        }
+
+        if (totalText.Length == MaxChar || string.IsNullOrEmpty(DraftTextAfterSpan.Text))
+        {
+            // Clear existing spans in the FormattedString
+            CursorLabel.FormattedText = new FormattedString(); // Reset to avoid duplications
+            // Create a new span with the text
+            var span = new Span
+            {
+                Text = CursorLabelText.ToString()
+            };
+            // Add the span to the FormattedString
+            CursorLabel.FormattedText.Spans.Add(span);
+
+        }
+
+        // CursorLabel.Text = CursorLabelText.ToString();
+    }
+}
+
+
+
+/*public static readonly BindableProperty MaxCharProperty =
+    BindableProperty.Create(nameof(MaxChar), typeof(int), typeof(Label), 6);
+
+public int MaxChar
+{
+    get => (int)GetValue(MaxCharProperty);
+    set => SetValue(MaxCharProperty, value);
+}
+
+public static readonly BindableProperty SavedTextProperty =
+    BindableProperty.Create(nameof(SavedText), typeof(string), typeof(Label), string.Empty);
+
+public string SavedText
+{
+    get => (string)GetValue(SavedTextProperty);
+    set => SetValue(SavedTextProperty, value);
+}
+
+public static readonly BindableProperty ProposedTextProperty =
+    BindableProperty.Create(nameof(ProposedText), typeof(string), typeof(Label), string.Empty,
+        validateValue: IsValidValue);
+
+public string ProposedText
+{
+    get => (string)GetValue(ProposedTextProperty);
+    set => SetValue(ProposedTextProperty, value);
+}
+
+static bool IsValidValue(BindableObject view, object value)
+{
+    string result;
+    Debug.WriteLine("validating....");
+    if (value.ToString() == "ABCC")
+        return true;
+    return false;
+}
+
+
+public static readonly BindableProperty EntryStateProperty =
+    BindableProperty.Create(nameof(EntryState), typeof(EntryStates), typeof(Label), EntryStates.Locked,
+        BindingMode.TwoWay, propertyChanged: OnEntryStateChanged);
+
+
+public EntryStates EntryState
+{
+    get => (EntryStates)GetValue(EntryStateProperty);
+    set => SetValue(EntryStateProperty, value);
+}
+
+private static void OnEntryStateChanged(BindableObject bindable, object oldValue, object newValue)
+{
+    if (bindable is DataEntry dataentry)
+    {
+        Debug.WriteLine("yes it is!");
+
+        if (newValue is EntryStates.Edit)
+        {
+            dataentry.DraftTextSpan.Text = "";
+            dataentry.StartBlinkingCursor(1, true);
+        }
+        else dataentry.StopBlinkingCursor();
+    }
+
+
+    Debug.WriteLine("test");
+    // if (bindable is DataEntry dataEntry)
+    // {
+    // 	dataEntry.UpdateEntryState();
+    // }
+}
+
+// {
+// 	return result;
+// }
+
+
+protected void UpdateEntryState()
+{
+    Debug.WriteLine("Updating EntryState changed");
+    // Add your logic to handle the state update
+}
+
+
+private int Cursorposition { get; set; } = 0;
+public bool CursorInInsertMode { get; set; } = false;
+
+public enum EntryStates
+{
+    Locked,
+    Highlight,
+    Edit
+}
+
+
+public DataEntry()
+{
+    InitializeComponent();
+}
+
+
+private static CancellationTokenSource? _blinkingTokenSource;
+
+public static CancellationTokenSource? BlinkingTokenSource
+{
+    get => _blinkingTokenSource;
+    set => _blinkingTokenSource = value;
+}
+
+private FormattedString FormattedStringWithCursor(FormattedString formattedString, int cursorpos,
+    bool overwritemode)
+{
+    var spanbefore = DraftTextSpan.Text.Substring(0, Cursorposition);
+    if (DraftTextSpan.Text.Length < MaxChar && Cursorposition != DraftTextSpan.Text.Length)
+    {
+        Debug.WriteLine("Insert mode at pos" + Cursorposition);
+        CursorInInsertMode = true;
+    }
+
+    return new FormattedString();
+}*/
 
 // 	// Validate the cursor position
 //     if (cursorpos < 0 || cursorpos > formattedString.ToString().Length)
@@ -204,7 +524,7 @@ public partial class DataEntry : ContentView
 //     return updatedFormattedString;
 // }
 
-    private void Cursorlogic(string newkey, int cursorpos, bool overwritemode)
+    /*private void Cursorlogic(string newkey, int cursorpos, bool overwritemode)
     {
         // Get the current text in the DraftTextSpan
         var currentText = DraftTextSpan.Text;
@@ -461,4 +781,4 @@ public partial class DataEntry : ContentView
         _blinkingCursorCts?.Cancel();
         CursorSpanOverwrite.TextColor = Colors.Cyan; // Ensure cursor is visible after stopping
     }
-}
+}*/
