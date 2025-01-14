@@ -245,9 +245,7 @@ public partial class DataEntry : ContentView
             switch (button.CommandParameter)
             {
                 case "Highlight":
-                    Highlighter.IsVisible = true;
-                    TextCursor.IsVisible = false;
-                    CursorLabel.IsVisible = false;
+    
                     EntryState = EntryStates.Highlight;
                     ButtonHighlight.BackgroundColor = Colors.Yellow;
                     break;
@@ -255,11 +253,11 @@ public partial class DataEntry : ContentView
                 case "Edit":
                     Highlighter.IsVisible = false;
                     TextCursor.IsVisible = true;
+                    CursorLabel.IsVisible = true;
                     // EnteredText.IsVisible = false;
                     DraftTextSpan.Text = EnteredText.Text;
                     EntryState = EntryStates.Edit;
                     ButtonEdit.BackgroundColor = Colors.Yellow;
-                    CursorLabel.IsVisible = true;
                     await ToggleSpanVisibility(CursorLabel);
                     break;
 
