@@ -44,7 +44,7 @@
                         </FormattedString>
                     </Label.FormattedText>
                 </Label>
-                <Label x:Name="CursorLabel" Text="█" BackgroundColor="Transparent" IsVisible="False" TextColor="Cyan" ZIndex="5"/>
+                <Label x:Name="CursorLabel" Text="▌" BackgroundColor="Transparent" IsVisible="False" TextColor="Cyan" ZIndex="5"/>
 
                 <!--This label is just to get width of DraftTextSpan text with reliable method-->
                 <Label x:Name="tmpLabel" BackgroundColor="Transparent" TextColor="Transparent"/>

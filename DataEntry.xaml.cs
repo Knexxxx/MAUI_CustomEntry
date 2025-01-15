@@ -8,7 +8,7 @@ namespace ExtendedDataEntry;
 
 public partial class DataEntry : ContentView
 {
-    private const char CursorLabelText = '█';
+    private const char CursorLabelText = '▊';//'▍'//'▌'//'█';
     private const char cursorInsertText = 'ꕯ';
     private string totalText;
 
@@ -175,8 +175,8 @@ public partial class DataEntry : ContentView
             if (totalText.Length < MaxChar)
                 DraftTextSpan.Text += button.Text;
             else
-                DraftTextSpan.Text = DraftTextSpan.Text.Substring(0, DraftTextSpan.Text.Length - 1) + button.Text;
-			
+                DraftTextAfterSpan.Text = button.Text + DraftTextAfterSpan.Text.Substring(1, DraftTextAfterSpan.Text.Length - 1);
+ 
         }
     }
 
@@ -256,7 +256,9 @@ public partial class DataEntry : ContentView
                     Highlighter.IsVisible = false;
                     TextCursor.IsVisible = true;
                     // EnteredText.IsVisible = false;
-                    DraftTextSpan.Text = EnteredText.Text;
+                    if (string.IsNullOrEmpty(totalText))
+                        DraftTextSpan.Text = EnteredText.Text;
+
                     EntryState = EntryStates.Edit;
                     ButtonEdit.BackgroundColor = Colors.Yellow;
                     CursorLabel.IsVisible = true;
@@ -300,7 +302,7 @@ public partial class DataEntry : ContentView
 
         if (totalText.Length < MaxChar || (!string.IsNullOrEmpty(DraftTextSpan.Text) && !string.IsNullOrEmpty(DraftTextAfterSpan.Text)))
         {
-            CursorLabel.TranslationX = tmpLabel.Measure(double.MaxValue, double.MaxValue).Width - 4;
+            CursorLabel.TranslationX = tmpLabel.Measure(double.MaxValue, double.MaxValue).Width;
             if(!string.IsNullOrEmpty(DraftTextAfterSpan.Text))
                 CursorLabel.Text = cursorInsertText.ToString();
         }
